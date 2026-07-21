@@ -30,6 +30,12 @@ Open [http://localhost:3000](http://localhost:3000). The provider directory is a
 | `npm run start` | Serve the production build |
 | `npm run typecheck` | Run strict TypeScript validation |
 
+## GitHub Pages
+
+Fusion AI can be published as a static GitHub Pages site. The included workflow builds the Next.js static export and deploys the generated `out/` directory whenever `main` changes.
+
+After the workflow is pushed, open **GitHub repository Settings → Pages** and set **Build and deployment → Source** to **GitHub Actions**. The site will be available at `https://sonu84it.github.io/fusion-ai/` after the first workflow run completes.
+
 ## Architecture
 
 ```text
