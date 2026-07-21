@@ -83,6 +83,12 @@ function formatGb(value: number) {
   return value >= 1000 ? `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)} TB` : `${value.toFixed(value < 10 ? 1 : 0)} GB`;
 }
 
+function formatParameters(value: number) {
+  const compactValue = value >= 1000 ? value / 1000 : value;
+  const unit = value >= 1000 ? "T" : "B";
+  return `${Number(compactValue.toFixed(compactValue < 10 ? 1 : 0))}${unit}`;
+}
+
 function logScale(value: number, start: number, end: number, ceiling: number) {
   const min = Math.log10(1);
   const max = Math.log10(ceiling);
@@ -91,8 +97,8 @@ function logScale(value: number, start: number, end: number, ceiling: number) {
 
 function parameterLabel(spec: PublishedModelSpec) {
   return spec.activeParametersB
-    ? `${spec.parametersB}B total / ${spec.activeParametersB}B active`
-    : `${spec.parametersB}B total`;
+    ? `${formatParameters(spec.parametersB)} total / ${formatParameters(spec.activeParametersB)} active`
+    : `${formatParameters(spec.parametersB)} total`;
 }
 
 function bubbleDiameter(value: number, min: number, max: number) {
@@ -130,7 +136,7 @@ export function OpenModelSizing() {
           <section className="rounded-2xl border border-white/[.08] bg-[#080e20]/65 p-4 sm:p-5" aria-labelledby="storage-title">
             <div className="flex items-start gap-3"><span className="mt-0.5 rounded-lg bg-violet-400/10 p-2 text-violet-200"><HardDrive className="h-4 w-4" /></span><div><h3 id="storage-title" className="font-display text-xl font-semibold">Parameter count vs. download size</h3><p className="mt-1 text-xs leading-5 text-slate-500">A free-form model field: bubble area represents approximate FP16 / BF16 model weights. Hover, focus, or select a model for its precise value.</p></div></div>
             <div className="mt-5"><div className="relative aspect-[12/7] w-full overflow-hidden rounded-2xl border border-violet-300/[.12] bg-[radial-gradient(circle_at_55%_38%,rgba(124,58,237,.16),transparent_42%),linear-gradient(135deg,rgba(15,23,42,.78),rgba(5,8,22,.95))] p-3" role="group" aria-label="Free-form bubble chart of model sizes. Bubble area is based on approximate FP16 and BF16 weight storage.">{specs.map((spec, index) => { const value = fp16Storage[index]; const diameter = bubbleDiameter(value, minimumFp16Storage, maximumFp16Storage); const anchor = bubbleAnchors[index]; const isSelected = spec.name === selectedSpec.name; const label = bubbleLabels[spec.name] ?? spec.name; const showValue = diameter >= 14; const labelSize = Math.max(9, Math.min(25, diameter * 1.3)); return <button key={spec.name} type="button" aria-pressed={isSelected} aria-label={`${spec.name}. ${parameterLabel(spec)}. FP16 or BF16 weights approximately ${formatGb(value)}.`} onClick={() => setSelectedName(spec.name)} onFocus={() => setSelectedName(spec.name)} onMouseEnter={() => setSelectedName(spec.name)} className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border text-center font-medium leading-tight text-white transition duration-200 motion-reduce:transition-none hover:scale-105 focus:scale-105 focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 focus:ring-offset-[#080e20]" style={{ left: `${anchor.x}%`, top: `${anchor.y}%`, width: `${diameter}%`, aspectRatio: "1", borderColor: isSelected ? "rgba(103,232,249,.95)" : "rgba(167,139,250,.7)", background: isSelected ? "radial-gradient(circle at 34% 28%, rgba(255,255,255,.28), rgba(124,58,237,.7) 38%, rgba(31,41,55,.96) 100%)" : "radial-gradient(circle at 34% 28%, rgba(255,255,255,.18), rgba(124,58,237,.48) 40%, rgba(15,23,42,.96) 100%)", boxShadow: isSelected ? "0 0 0 2px rgba(6,182,212,.18), 0 0 32px rgba(124,58,237,.6), inset 0 0 20px rgba(255,255,255,.1)" : "0 0 20px rgba(124,58,237,.3), inset 0 0 14px rgba(255,255,255,.08)" }}><span className="px-1.5" style={{ fontSize: `clamp(8px, ${diameter * 0.12}vw, ${labelSize}px)` }}>{label}</span>{showValue ? <span className="mt-0.5 text-[8px] text-violet-100/90 sm:text-xs">{formatGb(value)}</span> : null}</button>; })}</div></div>
-            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400"><span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-violet-400" />Bubble area: FP16 / BF16 weights</span><span aria-live="polite" className="rounded-full border border-cyan-300/20 bg-cyan-400/[.06] px-2.5 py-1 text-cyan-100">Selected: {selectedSpec.name} · {parameterLabel(selectedSpec)} · {formatGb(selectedFp16Storage)}</span></div>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400"><span className="inline-flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-violet-400" />Bubble area: FP16 / BF16 weights</span><span aria-live="polite" className="rounded-full border border-cyan-300/20 bg-cyan-400/[.06] px-2.5 py-1 text-cyan-100">Selected: {selectedSpec.name} · {parameterLabel(selectedSpec)} · FP16 / BF16 ≈ {formatGb(selectedFp16Storage)}</span></div>
           </section>
 
           <section className="rounded-2xl border border-white/[.08] bg-[#080e20]/65 p-4 sm:p-5" aria-labelledby="memory-title">
